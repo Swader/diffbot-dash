@@ -1,0 +1,9 @@
+#search-btn {
+    background-color: silver;
+    color: inherit;
+    height: 34px;
+}
+
+.sidebar-form {
+    border: none !important;
+}

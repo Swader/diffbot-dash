@@ -1,0 +1,13 @@
+{
+    "name": "swader/dash",
+    "description": "A version of AdminLTE with PHP asset compilation OOTB + some other useful stuff",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bruno Skvorc",
+            "email": "bruno@skvorc.me"
+        }
+    ],
+    "minimum-stability": "beta",
+    "require": {}
+}
