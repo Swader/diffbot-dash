@@ -8,9 +8,12 @@
       "email": "bruno@skvorc.me"
     }
   ],
-  "minimum-stability": "beta",
+  "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
+    "php-http/guzzle6-adapter": "~0.2@dev",
+    "swader/diffbot-php-client": "^1.2",
+    "nesbot/carbon": "^1.21"
   },
   "require-dev": {
     "beelab/bowerphp": "^0.3.4@beta",
@@ -19,6 +22,7 @@
     "natxet/CssMin": "^3.0",
     "linkorb/jsmin-php": "^1.0",
     "oyejorge/less.php": "v1.7.0.9",
-    "henrikbjorn/lurker": "dev-master"
+    "henrikbjorn/lurker": "dev-master",
+    "symfony/var-dumper": "^3.0@dev"
   }
 }
