@@ -1,13 +1,24 @@
 {
-    "name": "swader/dash",
-    "description": "A version of AdminLTE with PHP asset compilation OOTB + some other useful stuff",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Bruno Skvorc",
-            "email": "bruno@skvorc.me"
-        }
-    ],
-    "minimum-stability": "beta",
-    "require": {}
+  "name": "swader/dash",
+  "description": "A version of AdminLTE with PHP asset compilation OOTB + some other useful stuff",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Bruno Skvorc",
+      "email": "bruno@skvorc.me"
+    }
+  ],
+  "minimum-stability": "beta",
+  "prefer-stable": true,
+  "require": {
+  },
+  "require-dev": {
+    "beelab/bowerphp": "^0.3.4@beta",
+    "codegyre/robo": "^0.6.0",
+    "markstory/mini-asset": "^1.0",
+    "natxet/CssMin": "^3.0",
+    "linkorb/jsmin-php": "^1.0",
+    "oyejorge/less.php": "v1.7.0.9",
+    "henrikbjorn/lurker": "dev-master"
+  }
 }

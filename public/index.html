@@ -6,21 +6,23 @@
     <title>Diffbot Account Dashboard</title>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
           name="viewport">
-    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+
     <link rel="stylesheet"
           href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <link rel="stylesheet"
           href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
-    <link rel="stylesheet" href="dist/css/skins/skin-yellow.min.css">
-    <link rel="stylesheet" href="dist/css/my.css">
+
+    <!--Switch the two lines below to turn dev mode on/off-->
+    <link rel="stylesheet" href="dist/css/app.min.css">
+    <!--<link rel="stylesheet" href="dist/css/app.dev.css">-->
+
 
 </head>
 <!--
 BODY TAG OPTIONS:
 =================
 Apply one or more of the following classes to get the
-desired effect
+desired effect, and don't forget to change the skin to be used in assets/assets.ini
 |---------------------------------------------------------|
 | SKINS         | skin-blue                               |
 |               | skin-black                              |
@@ -132,18 +134,11 @@ desired effect
 
 </div><!-- ./wrapper -->
 
-<!-- REQUIRED JS SCRIPTS -->
+<script src="dist/js/vue.js"></script>
 
-<!-- jQuery 2.1.4 -->
-<script src="plugins/jQuery/jQuery-2.1.4.min.js"></script>
-<!-- Bootstrap 3.3.5 -->
-<script src="bootstrap/js/bootstrap.min.js"></script>
-<!-- AdminLTE App -->
+<!--Switch the two lines below to turn dev mode on / off-->
 <script src="dist/js/app.min.js"></script>
+<!--<script src="dist/js/app.dev.js"></script>-->
 
-<!-- Optionally, you can add Slimscroll and FastClick plugins.
-     Both of these plugins are recommended to enhance the
-     user experience. Slimscroll is required when using the
-     fixed layout. -->
 </body>
 </html>
