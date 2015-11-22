@@ -11,13 +11,13 @@ class RoboFile extends \Robo\Tasks
     {
         $this->taskWatch()
             ->monitor('build', function () {
-                $this->say("Starting Less/CSS rebuild");
+                $this->say(date('H:i:s').": starting Less/CSS rebuild");
                 $this->assetsBuild();
-                $this->say("Less/CSS rebuild done!");
+                $this->say(date('H:i:s').": less/CSS rebuild done!");
             })->monitor('js', function () {
-                $this->say("Starting JS rebuild");
+                $this->say(date('H:i:s').": starting JS rebuild");
                 $this->assetsBuild();
-                $this->say("JS rebuild done!");
+                $this->say(date('H:i:s').": JS rebuild done!");
             })->run();
     }
 

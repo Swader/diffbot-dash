@@ -13,8 +13,8 @@
           href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
 
     <!--Switch the two lines below to turn dev mode on/off-->
-    <link rel="stylesheet" href="dist/css/app.min.css">
-    <!--<link rel="stylesheet" href="dist/css/app.dev.css">-->
+    <!--<link rel="stylesheet" href="dist/css/app.min.css">-->
+    <link rel="stylesheet" href="dist/css/app.dev.css">
 
 
 </head>
@@ -77,11 +77,15 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
             <!-- search form (Optional) -->
             <form action="#" method="get" class="sidebar-form">
                 <div class="input-group">
-                    <input type="password" autocomplete="off" name="q"
+                    <input type="password" autocomplete="off" name="q" id="tokenInput"
                            class="form-control"
+                           value="{{token}}"
                            placeholder="Enter token">
               <span class="input-group-btn">
-                <button type="submit" name="search" id="search-btn"
+                <button @click.prevent="tokenshow" type="submit" name="search" id="unmask-btn"
+                        class="btn btn-flat"><i class="ion-eye"></i>
+                </button>
+                <button @click.prevent="tokensave" type="submit" name="search" id="search-btn"
                         class="btn btn-flat"><i class="ion-checkmark"></i>
                 </button>
               </span>
@@ -116,7 +120,7 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
 
             <!-- Your Page Content Here -->
 
-            {{ message }}
+            <span v-if="token">Token is saved as: {{ token }}</span>
 
         </section><!-- /.content -->
     </div><!-- /.content-wrapper -->
@@ -137,10 +141,15 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
 </div><!-- ./wrapper -->
 
 <script src="dist/js/vue.js"></script>
+<script src="dist/js/vue-resource.js"></script>
+
+<!--Uncomment below and comment above for dev mode-->
+<!--<script src="dist/js/vue.min.js"></script>-->
+<!--<script src="dist/js/vue-resource.min.js"></script>-->
 
 <!--Switch the two lines below to turn dev mode on / off-->
-<script src="dist/js/app.min.js"></script>
-<!--<script src="dist/js/app.dev.js"></script>-->
+<!--<script src="dist/js/app.min.js"></script>-->
+<script src="dist/js/app.dev.js"></script>
 
 </body>
 </html>

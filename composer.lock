@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8587f5f0dda17c14ed18747b6d0bc76f",
-    "content-hash": "1450316354e80829b1f1b6659a9429ab",
+    "hash": "b87461b856c778a31fef218fd3f4bcb5",
+    "content-hash": "5996cc349a40c41f4e1bf7f3e60400e1",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -1385,57 +1385,6 @@
                 "stylesheet"
             ],
             "time": "2015-09-28 01:11:47"
-        },
-        {
-            "name": "php-http/adapter",
-            "version": "v0.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-http/adapter.git",
-                "reference": "c6697453f41a9b4e05dfdbf4567a418d4cb3e632"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-http/adapter/zipball/c6697453f41a9b4e05dfdbf4567a418d4cb3e632",
-                "reference": "c6697453f41a9b4e05dfdbf4567a418d4cb3e632",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4",
-                "psr/http-message": "~1.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "0.1-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Http\\Adapter\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Eric GELOEN",
-                    "email": "geloen.eric@gmail.com"
-                },
-                {
-                    "name": "Márk Sági-Kazár",
-                    "email": "mark.sagikazar@gmail.com"
-                }
-            ],
-            "description": "HTTP adapter contract",
-            "homepage": "http://php-http.org",
-            "keywords": [
-                "adapter",
-                "http"
-            ],
-            "time": "2015-06-03 17:57:46"
         },
         {
             "name": "seld/cli-prompt",

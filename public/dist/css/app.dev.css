@@ -11631,7 +11631,7 @@ table.text-center th {
   border: 1px solid #374850;
   margin: 10px 10px;
 }
-.skin-yellow .sidebar-form input[type="text"],
+
 .skin-yellow .sidebar-form .btn {
   box-shadow: none;
   background-color: #374850;
@@ -11664,10 +11664,13 @@ table.text-center th {
   border-bottom-left-radius: 0;
 }
 
-#search-btn {
-  background-color: silver;
-  color: inherit;
-  height: 34px;
+.sidebar-form .btn {
+  background-color: silver !important;
+  color: inherit !important;
+  height: 34px !important;
+}
+.sidebar-form .btn:hover {
+  background-color: grey !important;
 }
 .sidebar-form {
   border: none !important;

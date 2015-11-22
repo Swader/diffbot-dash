@@ -24,5 +24,11 @@
     "oyejorge/less.php": "v1.7.0.9",
     "henrikbjorn/lurker": "dev-master",
     "symfony/var-dumper": "^3.0@dev"
-  }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/Swader/diffbot-php-client"
+    }
+  ]
 }

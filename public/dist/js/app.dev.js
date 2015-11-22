@@ -13608,9 +13608,26 @@ function _init() {
 }(jQuery));
 /** Put your custom JS code here **/
 
-new Vue({
+var ti = document.getElementById('tokenInput');
+
+var vm = new Vue({
     el: '#app',
     data: {
-        message: 'Hello Vue.js!'
+        token: localStorage.getItem('token') || ''
+    },
+    methods: {
+        tokensave: function() {
+            this.token = ti.value;
+            localStorage.setItem('token', this.token);
+
+        },
+        tokenshow: function() {
+            console.log("here1");
+            if (ti.type == "password") {
+                ti.type = "text";
+            } else {
+                ti.type = "password";
+            }
+        }
     }
-})
+});
