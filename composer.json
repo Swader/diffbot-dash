@@ -13,7 +13,8 @@
   "require": {
     "php-http/guzzle6-adapter": "~0.2@dev",
     "swader/diffbot-php-client": "^1.2",
-    "nesbot/carbon": "^1.21"
+    "nesbot/carbon": "^1.21",
+    "vlucas/phpdotenv": "^2.1"
   },
   "require-dev": {
     "beelab/bowerphp": "^0.3.4@beta",
