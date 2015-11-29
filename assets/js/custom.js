@@ -5,64 +5,71 @@ var ti = document.getElementById('tokenInput');
 var vm = new Vue({
     el: '#app',
     data: {
-        token: loadData('token')
+        info: {
+            "name": null,
+            "plan": null,
+            "token": null
+        },
+        ui: {
+            overlay: false
+        }
+    },
+    ready: function() {
+        this.info = this.loadData();
     },
     methods: {
-        tokensave: function() {
-            this.token = ti.value;
-            saveData({token: this.token});
+        tokensave: function () {
+            this.saveData();
+            this.showOverlay(true);
+            this.info.token = ti.value;
+            this.$http.get('/api.php', {"token": this.info.token}, function (data, status, request) {
 
+                if (data.status == "OK") {
+                    data['data']['token'] = this.info.token;
+                    this.saveData(data['data']);
+                } else {
+                    this.resetInfo();
+                    swal("Oh noes!", "Looks like something went wrong: " + data.message + " (code: "+ data.code +")", "error");
+                }
+
+                this.showOverlay(false);
+            });
         },
-        tokenshow: function() {
-            if (ti.type == "password") {
-                ti.type = "text";
+        tokenshow: function () {
+            ti.type = (ti.type == "password") ? "text" : "password";
+        },
+        saveData: function (data) {
+            if (data !== undefined) {
+                this.saveData();
+                for (var property in data) {
+                    if (data.hasOwnProperty(property)) {
+                        localStorage.setItem(property, data[property]);
+                        this.info[property] = data[property];
+                    }
+                }
             } else {
-                ti.type = "password";
+                localStorage.clear();
             }
         },
-        doThis: function() {
-            this.$http.get('/api.php', {}, function(data, status, request) {
-                console.log(data, status, request);
-            });
+        loadData: function () {
+            return {
+                "name": localStorage.getItem("name"),
+                "plan": localStorage.getItem("plan"),
+                "token": localStorage.getItem("token")
+            }
+        },
+        resetInfo: function () {
+            this.info = {
+                "name": null,
+                "plan": null,
+                "token": null
+            }
+        },
+        showOverlay: function(bool) {
+            this.ui.overlay = bool;
         }
     },
     http: {
         root: '/'
     }
 });
-
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    Non-vue logic here
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-
-/**
- * Saves data to localStorage, clears old data first
- * @param data
- */
-function saveData(data) {
-    if (data !== undefined) {
-        saveData();
-
-        for (property in Object.keys(data))
-
-        for (var property in data) {
-            if (data.hasOwnProperty(property)) {
-                localStorage.setItem(property, data[property]);
-            }
-        }
-    } else {
-        localStorage.clear();
-    }
-}
-
-/**
- * Loads given value from localStorage, or empty string if it isn't set.
- * @param key
- * @returns {string}
- */
-function loadData(key) {
-    if (key !== undefined) {
-        return localStorage.getItem(key) || '';
-    }
-    console.error("Key must be defined! I don't know what to load!");
-}

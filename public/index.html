@@ -81,7 +81,7 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
                     <input type="password" autocomplete="off" name="q"
                            id="tokenInput"
                            class="form-control"
-                           value="{{token}}"
+                           value="{{info.token}}"
                            placeholder="Enter token"
                            @keyup.enter="tokensave">
               <span class="input-group-btn">
@@ -132,9 +132,7 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
 
             <!-- Your Page Content Here -->
 
-            <span v-if="token">Token is saved as: {{ token }}</span>
-
-            <button @click="doThis">Test call</button>
+            <span v-if="info.name">Information for {{ info.name }}, on {{ info.plan }} plan</span>
 
         </section><!-- /.content -->
     </div><!-- /.content-wrapper -->
@@ -147,12 +145,13 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
                 href="http://diffbot-php-client-docs.readthedocs.org">Diffbot's PHP Client</a>
         </div>
         <!-- Default to the left -->
-        <strong>Copyright &copy; 2015 / 2016 <a
+        <strong>Copyright &copy; 2016 <a
                 href="https://twitter.com/bitfalls">Bruno Skvorc</a> @ <a
                 href="http://diffbot.com">Diffbot</a>.</strong> All rights reserved.
     </footer>
-
+    <div class="loading" v-if="ui.overlay"></div>
 </div><!-- ./wrapper -->
+
 
 <script src="dist/js/vue.js"></script>
 <script src="dist/js/vue-resource.js"></script>

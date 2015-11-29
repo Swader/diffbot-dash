@@ -6,6 +6,7 @@
     ],
     "private": true,
     "dependencies": {
-        "vue-resource": "*"
+        "vue-resource": "*",
+        "sweetalert": "*"
     }
 }
