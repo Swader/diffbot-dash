@@ -48,6 +48,11 @@ To have the files auto-rebuild after every change to the sources:
 
 ---
 
+## Todo:
+
+- speed up watching of files
+- add modularity? (http://addyosmani.com/writing-modular-js/)
+
 For AdminLTE docs, see the original repo.
 
 Full tutorial coming soon.

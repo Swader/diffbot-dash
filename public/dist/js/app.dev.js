@@ -14895,41 +14895,48 @@ function _init() {
 
 var ti = document.getElementById('tokenInput');
 
+var info = {
+    "name": null,
+    "plan": null,
+    "token": null
+};
+
 var vm = new Vue({
     el: '#app',
     data: {
-        info: {
-            "name": null,
-            "plan": null,
-            "token": null
-        },
+        info: info,
         ui: {
             overlay: false
         }
     },
-    ready: function() {
+    ready: function () {
         this.info = this.loadData();
+        if (this.info.token) {
+            this.requestData(this.info.token);
+        }
     },
     methods: {
         tokensave: function () {
             this.saveData();
+            this.requestData(ti.value);
+        },
+        tokenshow: function () {
+            ti.type = (ti.type == "password") ? "text" : "password";
+        },
+        requestData: function (token) {
             this.showOverlay(true);
-            this.info.token = ti.value;
-            this.$http.get('/api.php', {"token": this.info.token}, function (data, status, request) {
+            this.$http.get('/api.php', {"token": token}, function (data, status, request) {
 
                 if (data.status == "OK") {
-                    data['data']['token'] = this.info.token;
+                    data['data']['token'] = token;
                     this.saveData(data['data']);
                 } else {
                     this.resetInfo();
-                    swal("Oh noes!", "Looks like something went wrong: " + data.message + " (code: "+ data.code +")", "error");
+                    swal("Oh noes!", "Looks like something went wrong: " + data.message + " (code: " + data.code + ")", "error");
                 }
 
                 this.showOverlay(false);
             });
-        },
-        tokenshow: function () {
-            ti.type = (ti.type == "password") ? "text" : "password";
         },
         saveData: function (data) {
             if (data !== undefined) {
@@ -14952,13 +14959,9 @@ var vm = new Vue({
             }
         },
         resetInfo: function () {
-            this.info = {
-                "name": null,
-                "plan": null,
-                "token": null
-            }
+            this.info = info;
         },
-        showOverlay: function(bool) {
+        showOverlay: function (bool) {
             this.ui.overlay = bool;
         }
     },
