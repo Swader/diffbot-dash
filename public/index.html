@@ -26,7 +26,7 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
 |---------------------------------------------------------|
 | SKINS         | skin-blue                               |
 |               | skin-black                              |
-|               | skin-purple                             |
+|               | skin-purple                       z      |
 |               | skin-yellow                             |
 |               | skin-red                                |
 |               | skin-green                              |
@@ -75,17 +75,29 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
             <!--Show hidden token with "show plain" button or input field if not there-->
 
             <!-- search form (Optional) -->
-            <form action="#" method="get" class="sidebar-form">
+            <form @submit.prevent.stop action="#" method="get"
+                  class="sidebar-form">
                 <div class="input-group">
-                    <input type="password" autocomplete="off" name="q" id="tokenInput"
+                    <input type="password" autocomplete="off" name="q"
+                           id="tokenInput"
                            class="form-control"
                            value="{{token}}"
-                           placeholder="Enter token">
+                           placeholder="Enter token"
+                           @keyup.enter="tokensave">
               <span class="input-group-btn">
-                <button @click.prevent="tokenshow" type="submit" name="search" id="unmask-btn"
+
+                  <!--
+                  The below invisible submit button is a mock button because, stupidly, the browser default is to
+                  TRIGGER A CLICK EVENT ON THE NEAREST BUTTON WHEN ENTER IS PRESSED INSIDE A FORM INPUT
+                  -->
+
+                  <input type="submit" value="Whatever" style="display: none;">
+                <button @click="tokenshow" type="submit" name="search"
+                        id="unmask-btn"
                         class="btn btn-flat"><i class="ion-eye"></i>
                 </button>
-                <button @click.prevent="tokensave" type="submit" name="search" id="search-btn"
+                <button @click="tokensave" type="submit" name="search"
+                        id="search-btn"
                         class="btn btn-flat"><i class="ion-checkmark"></i>
                 </button>
               </span>
@@ -121,6 +133,8 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
             <!-- Your Page Content Here -->
 
             <span v-if="token">Token is saved as: {{ token }}</span>
+
+            <button @click="doThis">Test call</button>
 
         </section><!-- /.content -->
     </div><!-- /.content-wrapper -->
