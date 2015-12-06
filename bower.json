@@ -7,6 +7,8 @@
     "private": true,
     "dependencies": {
         "vue-resource": "*",
-        "sweetalert": "*"
+        "sweetalert": "*",
+        "c3": "*",
+        "vue-strap": "*"
     }
 }

@@ -9,11 +9,13 @@ $payload = [];
 
 try {
     $diffbot = new Swader\Diffbot\Diffbot($_GET['token']);
-    $info = $diffbot->getAccountInfo();
+    $days = (isset($_GET['days']) && (int)$_GET['days'] > 31) ? (int)$_GET['days'] : 31;
+    $info = $diffbot->getAccountInfo($days);
     $payload = [
         "data" => [
             'name' => $info->getName(),
-            'plan' => $info->getPlan()
+            'plan' => $info->getPlan(),
+            'calls' => $info->getCallsPerDay()
         ],
         "status" => "OK"
     ];
