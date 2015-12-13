@@ -139,3 +139,93 @@
 #dashchart {
   margin-top: 30px;
 }
+
+.invoice-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-flow: wrap;
+}
+
+.invoice {
+  width: 200px;
+  margin: 10px;
+  padding: 5px;
+  border: 1px solid silver;
+  -moz-box-shadow: 0px 1px 2px rgba(0,0,0,0.08),0 0 4px rgba(0,0,0,0.1);
+  -webkit-box-shadow: 0px 1px 2px rgba(0,0,0,0.08),0 0 4px rgba(0,0,0,0.1);
+  -o-box-shadow: 0px 1px 2px rgba(0,0,0,0.08),0 0 4px rgba(0,0,0,0.1);
+  -ms-box-shadow: 0px 1px 2px rgba(0,0,0,0.08),0 0 4px rgba(0,0,0,0.1);
+  -khtml-box-shadow: 0px 1px 2px rgba(0,0,0,0.08),0 0 4px rgba(0,0,0,0.1);
+  box-shadow: 0px 1px 2px rgba(0,0,0,0.08),0 0 4px rgba(0,0,0,0.1);
+}
+
+@media(max-width: 400px) {
+  .invoice-container {
+    flex-direction: column;
+  }
+  .invoice {
+    width: 90%;
+    margin: auto auto 20px;
+  }
+}
+
+.invoice-title {
+  text-align: center;
+  margin-top: 10px;
+  font-size: x-large;
+}
+
+.sexy_line {
+  margin: 15px 0;
+  height: 1px;
+  background: dimgray;
+  background: -webkit-gradient(linear, 0 0, 100% 0, from(white), to(white), color-stop(50%, dimgrey));
+}
+
+.invoice.paid {
+
+}
+
+.invoice .amount {
+  font-size: 2.25em;
+  display: block;
+  text-align: center;
+}
+
+.invoice .amount.smaller {
+  font-size: 1.75em;
+}
+
+.invoice .amount.smaller.overage {
+  color: red;
+  font-size: 1.5em;
+}
+
+.invoice .plan {
+  font-size: 1.2em;
+  text-align: center;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.price_badge {
+  position: absolute;
+  right: -10px;
+  bottom: -5px;
+}
+
+.price_badge i {
+  border: 1px solid green;
+  padding: 8px 9px;
+  border-radius: 25px;
+  font-size: 2em;
+  background-color: limegreen;
+  color: white
+}
+
+.price_badge.yella i {
+  border: 1px solid yellow;
+  padding: 8px 10px;
+  background-color: lightcoral;
+}

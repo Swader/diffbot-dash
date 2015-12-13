@@ -120,7 +120,8 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
     <div class="content-wrapper">
         <!-- Content Header (Page header) -->
         <section class="content-header">
-            <a href="javascript:void(0)" onclick="localStorage.clear();window.location = window.location">Dev mode: clear all</a>
+            <a href="javascript:void(0)"
+               onclick="localStorage.clear();window.location = window.location">Dev mode: clear all</a>
             <h1>
                 Diffbot Account Dashboard
                 <small>API calls per date, invoice information and status</small>
@@ -135,8 +136,32 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
                 <span>Information for {{ info.name }}, on {{ info.plan }} plan</span>
                 <h4>API calls frequency over the given period. Change period with range picker below.</h4>
             </template>
-            <input v-show="info.name" id="rangepicker" type="text" placeholder="Data for last 31 days"/>
+            <input v-show="info.name" id="rangepicker" type="text"
+                   placeholder="Data for last 31 days"/>
             <div id="dashchart"></div>
+
+            <div v-if="info.invoices">
+                <h4>Invoice data</h4>
+                <div class="invoice-container">
+                    <template v-for="invoice in info.invoices">
+                        <div class="invoice {{ invoice.status }}">
+                            <h4 class="invoice-title">{{ invoice.date.date | momentify }}</h4>
+                            <div class="sexy_line"></div>
+                            <span class="amount">{{ invoice.totalAmount | currency }}</span>
+                            <span class="amount smaller overage" v-if="invoice.overageAmount > 0">of which overage: {{ invoice.overageAmount | currency }}!</span>
+                            <span class="amount smaller">{{ invoice.totalCalls }} calls</span>
+                            <div class="sexy_line"></div>
+                            <span class="plan">{{ invoice.plan | capitalize }} plan</span>
+                            <div class="price_badge" title="paid" v-if="invoice.status == 'paid'">
+                                <i class="fa fa-thumbs-up"></i>
+                            </div>
+                            <div class="price_badge yella" title="unpaid" v-if="invoice.status != 'paid'">
+                                <i class="fa fa-exclamation-circle"></i>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
 
         </section><!-- /.content -->
     </div><!-- /.content-wrapper -->
@@ -153,7 +178,7 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
                 href="https://twitter.com/bitfalls">Bruno Skvorc</a> @ <a
                 href="http://diffbot.com">Diffbot</a>.</strong> All rights reserved.
     </footer>
-    <div class="loading" v-if="ui.overlay"></div>
+    <div class="loading" v-if="options.overlay"></div>
 </div><!-- ./wrapper -->
 
 
