@@ -141,11 +141,11 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
             <div id="dashchart"></div>
 
             <div v-if="info.invoices">
-                <h4>Invoice data</h4>
+                <h4>Invoice data (click date to render period on chart)</h4>
                 <div class="invoice-container">
                     <template v-for="invoice in info.invoices">
                         <div class="invoice {{ invoice.status }}">
-                            <h4 class="invoice-title">{{ invoice.date.date | momentify }}</h4>
+                            <h4 class="invoice-title"><a href="#dashboard/{{ invoice.date.date | invoiceslug }}" title="Show on chart">{{ invoice.date.date | momentify }}</a></h4>
                             <div class="sexy_line"></div>
                             <span class="amount">{{ invoice.totalAmount | currency }}</span>
                             <span class="amount smaller overage" v-if="invoice.overageAmount > 0">of which overage: {{ invoice.overageAmount | currency }}!</span>
@@ -184,10 +184,12 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
 
 <script src="dist/js/vue.js"></script>
 <script src="dist/js/vue-resource.js"></script>
+<script src="dist/js/vue-router.js"></script>
 
 <!--Uncomment below and comment above for dev mode-->
 <!--<script src="dist/js/vue.min.js"></script>-->
 <!--<script src="dist/js/vue-resource.min.js"></script>-->
+<!--<script src="dist/js/vue-router.min.js"></script>-->
 
 <!--Switch the two lines below to turn dev mode on / off-->
 <!--<script src="dist/js/app.min.js"></script>-->

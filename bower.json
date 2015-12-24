@@ -9,6 +9,7 @@
         "vue-resource": "*",
         "sweetalert": "*",
         "c3": "*",
-        "vue-strap": "*"
+        "vue-strap": "*",
+        "vue-router": "*"
     }
 }
