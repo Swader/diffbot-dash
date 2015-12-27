@@ -71,100 +71,29 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
 
         <section class="sidebar">
 
-
-            <!--Show hidden token with "show plain" button or input field if not there-->
-
-            <!-- search form (Optional) -->
-            <form @submit.prevent.stop action="#" method="get"
-                  class="sidebar-form">
-                <div class="input-group">
-                    <input type="password" autocomplete="off" name="q"
-                           id="tokenInput"
-                           class="form-control"
-                           value="{{info.token}}"
-                           placeholder="Enter token"
-                           @keyup.enter="tokensave">
-              <span class="input-group-btn">
-
-                  <!--
-                  The below invisible submit button is a mock button because, stupidly, the browser default is to
-                  TRIGGER A CLICK EVENT ON THE NEAREST BUTTON WHEN ENTER IS PRESSED INSIDE A FORM INPUT
-                  -->
-
-                  <input type="submit" value="Whatever" style="display: none;">
-                <button @click="tokenshow" type="submit" name="search"
-                        id="unmask-btn"
-                        class="btn btn-flat"><i class="ion-eye"></i>
-                </button>
-                <button @click="tokensave" type="submit" name="search"
-                        id="search-btn"
-                        class="btn btn-flat"><i class="ion-checkmark"></i>
-                </button>
-              </span>
-                </div>
-            </form>
-            <!-- /.search form -->
+            <tokenform :token="info.token"></tokenform>
 
             <!-- Sidebar Menu -->
             <ul class="sidebar-menu">
                 <li class="header">DETAILS</li>
                 <!-- Optionally, you can add icons to the links -->
-                <li class="active"><a href="#"><i class="fa fa-link"></i>
+                <li v-link="'/dashboard'"><a v-link="'/dashboard'"><i
+                        class="fa fa-link"></i>
                     <span>Dashboard</span></a></li>
+                <li v-link="'/extra'"><a v-link="'/extra'"><i
+                        class="fa fa-link"></i>
+                    <span>Extra screen</span></a></li>
+                <li><a href="javascript:void(0)"
+                       onclick="localStorage.clear();location.reload()">Dev mode: clear all</a>
+                </li>
+
             </ul><!-- /.sidebar-menu -->
+
         </section>
         <!-- /.sidebar -->
     </aside>
 
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
-        <!-- Content Header (Page header) -->
-        <section class="content-header">
-            <a href="javascript:void(0)"
-               onclick="localStorage.clear();window.location = window.location">Dev mode: clear all</a>
-            <h1>
-                Diffbot Account Dashboard
-                <small>API calls per date, invoice information and status</small>
-            </h1>
-
-        </section>
-
-        <!-- Main content -->
-        <section class="content">
-
-            <template v-if="info.name">
-                <span>Information for {{ info.name }}, on {{ info.plan }} plan</span>
-                <h4>API calls frequency over the given period. Change period with range picker below.</h4>
-            </template>
-            <input v-show="info.name" id="rangepicker" type="text"
-                   placeholder="Data for last 31 days"/>
-            <div id="dashchart"></div>
-
-            <div v-if="info.invoices">
-                <h4>Invoice data (click date to render period on chart)</h4>
-                <div class="invoice-container">
-                    <template v-for="invoice in info.invoices">
-                        <div class="invoice {{ invoice.status }}">
-                            <h4 class="invoice-title"><a href="#dashboard/{{ invoice.date.date | invoiceslug }}" title="Show on chart">{{ invoice.date.date | momentify }}</a></h4>
-                            <div class="sexy_line"></div>
-                            <span class="amount">{{ invoice.totalAmount | currency }}</span>
-                            <span class="amount smaller overage" v-if="invoice.overageAmount > 0">of which overage: {{ invoice.overageAmount | currency }}!</span>
-                            <span class="amount smaller">{{ invoice.totalCalls }} calls</span>
-                            <div class="sexy_line"></div>
-                            <span class="plan">{{ invoice.plan | capitalize }} plan</span>
-                            <div class="price_badge" title="paid" v-if="invoice.status == 'paid'">
-                                <i class="fa fa-thumbs-up"></i>
-                            </div>
-                            <div class="price_badge yella" title="unpaid" v-if="invoice.status != 'paid'">
-                                <i class="fa fa-exclamation-circle"></i>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-        </section><!-- /.content -->
-    </div><!-- /.content-wrapper -->
+    <router-view :info="info" :options="options"></router-view>
 
     <!-- Main Footer -->
     <footer class="main-footer">
@@ -180,7 +109,6 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
     </footer>
     <div class="loading" v-if="options.overlay"></div>
 </div><!-- ./wrapper -->
-
 
 <script src="dist/js/vue.js"></script>
 <script src="dist/js/vue-resource.js"></script>

@@ -16286,74 +16286,143 @@ function _init() {
     });
   };
 }(jQuery));
-// @todo: convert it into a VueJS component?
-var ti = document.getElementById('tokenInput');
-
-var defaultDays = 31;
-var defaultInfo = {
-    name: null,
-    plan: null,
-    token: null,
-    range: null,
-    calls: null,
-    invoices: null
-};
-
-// When set to true, outputs full stack trace with every warning
-Vue.config.debug = true;
-
 Vue.filter('momentify', function (value) {
     return moment(value).format("DD.MM.YYYY");
 });
 
-Vue.filter('invoiceslug', function(value) {
+Vue.filter('invoiceslug', function (value) {
     return moment(value).subtract(1, 'month').format("YYYY-MM-DD") + '+' + moment(value).format("YYYY-MM-DD");
 });
+Vue.component('diffbot-invoice', {
+    template: `
+        <div class="invoice {{ inv.status }}">
+        <h4 class="invoice-title"><a
+                href="#dashboard/{{ inv.date.date | invoiceslug }}"
+                title="Show on chart">{{ inv.date.date | momentify }}</a></h4>
+        <div class="sexy_line"></div>
+        <span class="amount">{{ inv.totalAmount | currency }}</span>
+        <span class="amount smaller overage"
+              v-if="inv.overageAmount > 0">of which overage: {{ inv.overageAmount | currency }}!</span>
+        <span class="amount smaller">{{ inv.totalCalls }} calls</span>
+        <div class="sexy_line"></div>
+        <span class="plan">{{ inv.plan | capitalize }} plan</span>
+        <div class="price_badge" title="paid" v-if="inv.status == 'paid'">
+            <i class="fa fa-thumbs-up"></i>
+        </div>
+        <div class="price_badge yella" title="unpaid"
+             v-if="inv.status != 'paid'">
+            <i class="fa fa-exclamation-circle"></i>
+        </div>
+    </div>
 
+    `,
+    props: ['inv']
+});
 
-
-var vm = new Vue({
-    el: '#app',
-    data: {
-        info: defaultInfo,
-        options: {
-            overlay: false,
-            dateFormat: "DD.MM.YYYY.",
-            apiUrl: "/api.php",
-            callsChart: {
-                "days": defaultDays,
-                "startDate": moment().subtract(defaultDays, 'days'),
-                "endDate": moment()
-            }
+Vue.component('tokenform', {
+    template: `
+        <form @submit.prevent.stop action="#" method="get"
+          class="sidebar-form">
+        <div class="input-group">
+            <input type="{{ type }}" autocomplete="off" name="q"
+                   id="tokenInput"
+                   class="form-control"
+                   value="{{token}}"
+                   placeholder="Enter token"
+                   @keyup.enter="tokensave">
+              <span class="input-group-btn">
+                  <!--
+                  The below invisible submit button is a mock button because, stupidly, the browser default is to
+                  TRIGGER A CLICK EVENT ON THE NEAREST BUTTON WHEN ENTER IS PRESSED INSIDE A FORM INPUT
+                  -->
+                  <input type="submit" value="Whatever" style="display: none;">
+                <button @click="tokenshow" type="submit" name="search"
+                        id="unmask-btn"
+                        class="btn btn-flat"><i class="ion-eye"></i>
+                </button>
+                <button @click="tokensave" type="submit" name="search"
+                        id="search-btn"
+                        class="btn btn-flat"><i class="ion-checkmark"></i>
+                </button>
+              </span>
+        </div>
+    </form>
+    `,
+    props: ['token'],
+    data: function () {
+        return {
+            type: "password"
         }
-    },
-    ready: function () {
-        this._loadData();
-        if (this.info.token) {
-            this._requestData(this.info.token, this.options.callsChart.days);
-        }
-
-        this.$nextTick(function () {
-            vm.initRangePicker();
-        });
     },
     methods: {
+        tokenshow: function () {
+            this.type = (this.type == "password") ? "text" : "password";
+        },
         tokensave: function (event) {
             event.target.blur();
-            localStorage.clear();
-            this._requestData(ti.value);
+            this.$dispatch('token-saved', document.getElementById('tokenInput').value);
+        }
+    }
+});
+var Dashboard = Vue.extend({
+    template: `
+        <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+
+            <h1>
+                Diffbot Account Dashboard
+                <small>API calls per date, invoice information and status</small>
+            </h1>
+
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+
+            <template v-if="info.name">
+                <span>Information for {{ info.name }}, on {{ info.plan }} plan</span>
+                <h4>API calls frequency over the given period. Change period with range picker below.</h4>
+            </template>
+            <input v-show="info.name" id="rangepicker" type="text"
+                   placeholder="Data for last 31 days"/>
+            <div id="dashchart"></div>
+
+            <div v-if="info.invoices">
+                <h4>Invoice data (click date to render period on chart)</h4>
+                <div class="invoice-container">
+                    <template v-for="invoice in info.invoices">
+                        <diffbot-invoice :inv="invoice"></diffbot-invoice>
+                    </template>
+                </div>
+            </div>
+
+        </section><!-- /.content -->
+    </div>
+    `,
+    props: ['info', 'options'],
+    ready: function () {
+        this.$nextTick(function () {
             this.initRangePicker();
-        },
-        tokenshow: function () {
-            ti.type = (ti.type == "password") ? "text" : "password";
-        },
+        }.bind(this));
+
+        if (this.info.calls) {
+            this.$parent.chartData(this.$parent._filterCallRange(jQuery.extend(true, {}, this.info.calls)));
+        }
+    },
+    events: {
+        'token-saved': function(token) {
+            this.initRangePicker();
+        }
+    },
+    methods: {
         initRangePicker: function () {
             $("#rangepicker").daterangepicker({
                 locale: {
-                    format: vm.options.dateFormat
+                    format: this.options.dateFormat
                 },
-                startDate: vm.options.callsChart.startDate,
-                endDate: vm.options.callsChart.endDate,
+                startDate: this.options.callsChart.startDate,
+                endDate: this.options.callsChart.endDate,
                 ranges: {
                     'Last 7 Days': [moment().subtract(6, 'days'), moment()],
                     'Last 31 Days': [moment().subtract(30, 'days'), moment()],
@@ -16367,56 +16436,112 @@ var vm = new Vue({
                 maxDate: moment(),
                 autoApply: true
             }).on('apply.daterangepicker', function (ev, picker) {
-                vm.options.callsChart.days = Math.abs(picker.startDate.diff(moment(), 'days') - 1);
-                vm.options.callsChart.startDate = picker.startDate;
-                vm.options.callsChart.endDate = picker.endDate;
-                vm._requestData(vm.info.token, vm.options.callsChart.days);
-            });
-        },
-        _checkRefreshNeeded: function (days) {
+                this.$dispatch('request-data', this.info.token, this.options.callsChart.days, picker);
+            }.bind(this));
+        }
+    }
+});
+var Something = Vue.extend({
+    template: `
+        <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+        Hello there!
+        </section></div>
+    `
+});
 
-            if (this.info.range === null) {
-                console.log("Cached data not present.");
-                return true;
-            }
+// Default date range to load at first
+var defaultDays = 31;
+// Default data structure to be used - also used to reset to initial state
+var defaultInfo = {
+    name: null,
+    plan: null,
+    token: null,
+    range: null,
+    calls: null,
+    invoices: null
+};
 
-            var refreshNeeded = false;
+// When set to true, outputs full stack trace with every warning
+Vue.config.debug = true;
 
-            var nowFormatted = moment().format('YYYY-MM-DD');
-            var toFormatted = moment(this.info.range.to).format('YYYY-MM-DD');
-            var fromDiff = Math.abs(moment(this.info.range.from).diff(moment(nowFormatted), 'days'));
-
-            //console.log("Comparing NOW (" + nowFormatted + ") VS TO (" + toFormatted + ")");
-            if (moment(nowFormatted).isAfter(moment(toFormatted))) {
-                //console.log("Now Formatted (" + nowFormatted + ") is after To Formatted (" + toFormatted + ")");
-                refreshNeeded = true;
-            }
-
-            //console.log("Comparing oldest saved date's diff (" + fromDiff + ") to today is less than number of requested days (" + days + ")");
-            if (fromDiff < days) {
-                //console.log("Least recent saved date's diff (" + fromDiff + ") to today is less than number of requested days (" + days + ")");
-                refreshNeeded = true;
-            }
-
-            return refreshNeeded;
-        },
-        _filterCallRange: function (calls) {
-            var keys = Object.keys(calls);
-            var dlen = keys.length;
-
-            var startCheck = moment(this.options.callsChart.startDate.format()).subtract(1, 'days');
-            var endCheck = this.options.callsChart.endDate;
-
-            for (var i = 0; i < dlen; i++) {
-                if (!moment(keys[i]).isBetween(startCheck, endCheck)) {
-                    delete calls[keys[i]];
+var App = Vue.extend({
+    data: function () {
+        return {
+            info: defaultInfo,
+            options: {
+                overlay: false,
+                dateFormat: "DD.MM.YYYY.",
+                apiUrl: "/api.php",
+                callsChart: {
+                    "days": defaultDays,
+                    "startDate": moment().subtract(defaultDays, 'days'),
+                    "endDate": moment()
                 }
             }
-            return calls;
+        }
+    },
+    /**
+     * When the main component loads (is ready),
+     * cached data is restored and, if needed, re-fetched
+     */
+    ready: function () {
+        this._loadData();
+        if (this.info.token) {
+            this._requestData(this.info.token, this.options.callsChart.days);
+        }
+    },
+    events: {
+        /**
+         * This event occurs when the token input field is used
+         * Once the data is reset and the ground is cleared for the new token,
+         * new data for 31 days is fetched and all child components are notified
+         * of the token change via $broadcast.
+         * @param token
+         */
+        'token-saved': function (token) {
+            localStorage.clear();
+            this._requestData(token);
+            this.$broadcast('token-saved', token);
         },
-        // Note that on the API end, if less than 31 days are given, it defaults back to 31
-        // This is because shorter timespans don't get returned faster, and we do all the charting
-        // and calculating on the client side anyway, so there's no point in doing short-range fetches
+        /**
+         * In progress - needs work
+         * @param token
+         * @param days
+         * @param picker
+         */
+        'request-data': function (token, days, picker) {
+            this.options.callsChart.days = Math.abs(picker.startDate.diff(moment(), 'days') - 1);
+            this.options.callsChart.startDate = picker.startDate;
+            this.options.callsChart.endDate = picker.endDate;
+            this._requestData(token, this.options.callsChart.days);
+        }
+    },
+    methods: {
+        /**
+         * Used to fetch data from cache and put it into the App instance
+         * @private
+         */
+        _loadData: function () {
+            var cached = localStorage.getItem('cached');
+            if (cached !== null) {
+                cached = JSON.parse(cached);
+            }
+            this.info = jQuery.extend(true, this.info, cached);
+        },
+        /**
+         * Note that on the API end, if less than 31 days are given, it defaults
+         * back to 31. This is because shorter timespans don't get returned
+         * faster, and we do all the charting and calculating on the client side
+         * anyway, so there's no point in doing short-range fetches.
+         *
+         * @todo: needs work
+         * @param token
+         * @param days
+         * @private
+         */
+        //
         _requestData: function (token, days) {
             if (days === undefined || days === null) {
                 days = 31;
@@ -16431,8 +16556,10 @@ var vm = new Vue({
                     if (data.status == "OK") {
                         data['data']['token'] = token;
                         this._saveData(data['data']);
-                        this.chartData(this._filterCallRange(jQuery.extend(true, {}, data['data']['calls'])));
-                        this.renderInvoices(data['data']['invoices']);
+
+                        var filtered = this._filterCallRange(jQuery.extend(true, {}, data['data']['calls']));
+
+                        this.chartData(filtered);
                     } else {
                         localStorage.clear();
                         this.info = defaultInfo;
@@ -16442,25 +16569,69 @@ var vm = new Vue({
                 }.bind(this));
             } else {
                 // Refresh not needed
-                this.chartData(this._filterCallRange(jQuery.extend(true, {}, this.info.calls)));
-                this.renderInvoices(this.info.invoices);
+                var filtered = this._filterCallRange(jQuery.extend(true, {}, this.info.calls));
+                this.chartData(filtered);
                 this.showOverlay(false);
             }
         },
+        /**
+         * A refresh of data for a given token is needed if it's been more than
+         * a day since the last fetch, if there is no cached data at all, and
+         * if the requested range is bigger than the range in the cache.
+         * @param days
+         * @returns {boolean}
+         * @private
+         */
+        _checkRefreshNeeded: function (days) {
+
+            var refreshNeeded = false;
+
+            var nowFormatted = moment().format('YYYY-MM-DD');
+            var toFormatted = moment(this.info.range.to).format('YYYY-MM-DD');
+            var fromDiff = Math.abs(moment(this.info.range.from).diff(moment(nowFormatted), 'days'));
+
+            if (moment(nowFormatted).isAfter(moment(toFormatted)) || fromDiff < days || this.info.range === null) {
+                refreshNeeded = true;
+            }
+
+            return refreshNeeded;
+        },
+        /**
+         * Saves the fetched data into localStorage
+         * @param data
+         * @private
+         */
         _saveData: function (data) {
             localStorage.setItem('cached', JSON.stringify(data));
             this._loadData();
         },
-        _loadData: function () {
-            var cached = localStorage.getItem('cached');
-            if (cached !== null) {
-                cached = JSON.parse(cached);
+        /**
+         * Removes all the call values that aren't in the requested date range.
+         * This is used for displaying on the chart.
+         * @todo: needs work - where do we put this?
+         * @param calls
+         * @returns {*}
+         * @private
+         */
+        _filterCallRange: function (calls) {
+            var keys = Object.keys(calls);
+            var dlen = keys.length;
+
+            var startCheck = moment(this.options.callsChart.startDate.format()).subtract(1, 'days');
+            var endCheck = this.options.callsChart.endDate;
+
+            for (var i = 0; i < dlen; i++) {
+                if (!moment(keys[i]).isBetween(startCheck, endCheck)) {
+                    delete calls[keys[i]];
+                }
             }
-            this.info = jQuery.extend(true, this.info, cached);
+            return calls;
         },
-        showOverlay: function (bool) {
-            this.options.overlay = bool;
-        },
+        /**
+         * Initializes the chart and plots the data passed in
+         * @todo: to be moved into the Dashboard component
+         * @param data
+         */
         chartData: function (data) {
 
             var vals = Object.keys(data).map(function (key) {
@@ -16490,11 +16661,34 @@ var vm = new Vue({
                 }
             });
         },
-        renderInvoices: function(data) {
-
+        /**
+         * Switches the loading overlay on/off
+         * @param bool
+         */
+        showOverlay: function (bool) {
+            this.options.overlay = bool;
         }
     },
     http: {
         root: '/'
     }
 });
+
+var router = new VueRouter({
+    hashbang: false,
+    linkActiveClass: 'active'
+});
+
+router.map({
+    '/': {
+        component: Dashboard
+    },
+    'dashboard': {
+        component: Dashboard
+    },
+    'extra': {
+        component: Something
+    }
+});
+
+router.start(App, '#app');
