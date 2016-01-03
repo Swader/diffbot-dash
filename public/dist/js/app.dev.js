@@ -16293,11 +16293,11 @@ Vue.filter('momentify', function (value) {
 Vue.filter('invoiceslug', function (value) {
     return moment(value).subtract(1, 'month').format("YYYY-MM-DD") + '+' + moment(value).format("YYYY-MM-DD");
 });
+
 Vue.component('diffbot-invoice', {
     template: `
         <div class="invoice {{ inv.status }}">
-        <h4 class="invoice-title"><a
-                href="#dashboard/{{ inv.date.date | invoiceslug }}"
+        <h4 class="invoice-title"><a v-link="{ name: 'chart', params: {from: from, to: to} }"
                 title="Show on chart">{{ inv.date.date | momentify }}</a></h4>
         <div class="sexy_line"></div>
         <span class="amount">{{ inv.totalAmount | currency }}</span>
@@ -16314,9 +16314,15 @@ Vue.component('diffbot-invoice', {
             <i class="fa fa-exclamation-circle"></i>
         </div>
     </div>
-
     `,
-    props: ['inv']
+    props: ['inv'],
+    data: function () {
+        return {
+            from: moment(this.inv.date.date).subtract(1, 'month').format("YYYY-MM-DD"),
+            to: moment(this.inv.date.date).format("YYYY-MM-DD")
+        }
+    }
+
 });
 
 Vue.component('tokenform', {
@@ -16408,6 +16414,13 @@ var Dashboard = Vue.extend({
 
         if (this.info.calls) {
             this.$parent.chartData(this.$parent._filterCallRange(jQuery.extend(true, {}, this.info.calls)));
+        }
+    },
+    route: {
+        data: function () {
+            if (this.$route.params.from) {
+                this.$dispatch('request-data', this.info.token, this.$route.params);
+            }
         }
     },
     events: {
@@ -16512,10 +16525,21 @@ var App = Vue.extend({
          * @param picker
          */
         'request-data': function (token, days, picker) {
-            this.options.callsChart.days = Math.abs(picker.startDate.diff(moment(), 'days') - 1);
-            this.options.callsChart.startDate = picker.startDate;
-            this.options.callsChart.endDate = picker.endDate;
+            if (typeof days === 'object' && days !== null) {
+                // date route
+                this.options.callsChart.startDate = moment(days.from);
+                this.options.callsChart.endDate = moment(days.to);
+                this.options.callsChart.days = Math.abs(this.options.callsChart.startDate.diff(moment(), 'days') - 1);
+            } else {
+                // standard
+                this.options.callsChart.days = Math.abs(picker.startDate.diff(moment(), 'days') - 1);
+                this.options.callsChart.startDate = picker.startDate;
+                this.options.callsChart.endDate = picker.endDate;
+            }
             this._requestData(token, this.options.callsChart.days);
+        },
+        'hello': function (msg) {
+            console.log(msg);
         }
     },
     methods: {
@@ -16586,11 +16610,15 @@ var App = Vue.extend({
 
             var refreshNeeded = false;
 
+            if (this.info.range === null) {
+                return true;
+            }
+
             var nowFormatted = moment().format('YYYY-MM-DD');
             var toFormatted = moment(this.info.range.to).format('YYYY-MM-DD');
             var fromDiff = Math.abs(moment(this.info.range.from).diff(moment(nowFormatted), 'days'));
 
-            if (moment(nowFormatted).isAfter(moment(toFormatted)) || fromDiff < days || this.info.range === null) {
+            if (moment(nowFormatted).isAfter(moment(toFormatted)) || fromDiff < days) {
                 refreshNeeded = true;
             }
 
@@ -16680,15 +16708,20 @@ var router = new VueRouter({
 });
 
 router.map({
-    '/': {
+    '/dashboard': {
         component: Dashboard
     },
-    'dashboard': {
+    '/dashboard/chart/:from/:to': {
+        name: 'chart',
         component: Dashboard
     },
-    'extra': {
+    '/extra': {
         component: Something
     }
+});
+
+router.redirect({
+    '/': '/dashboard'
 });
 
 router.start(App, '#app');

@@ -59,10 +59,21 @@ var App = Vue.extend({
          * @param picker
          */
         'request-data': function (token, days, picker) {
-            this.options.callsChart.days = Math.abs(picker.startDate.diff(moment(), 'days') - 1);
-            this.options.callsChart.startDate = picker.startDate;
-            this.options.callsChart.endDate = picker.endDate;
+            if (typeof days === 'object' && days !== null) {
+                // date route
+                this.options.callsChart.startDate = moment(days.from);
+                this.options.callsChart.endDate = moment(days.to);
+                this.options.callsChart.days = Math.abs(this.options.callsChart.startDate.diff(moment(), 'days') - 1);
+            } else {
+                // standard
+                this.options.callsChart.days = Math.abs(picker.startDate.diff(moment(), 'days') - 1);
+                this.options.callsChart.startDate = picker.startDate;
+                this.options.callsChart.endDate = picker.endDate;
+            }
             this._requestData(token, this.options.callsChart.days);
+        },
+        'hello': function (msg) {
+            console.log(msg);
         }
     },
     methods: {
@@ -133,11 +144,15 @@ var App = Vue.extend({
 
             var refreshNeeded = false;
 
+            if (this.info.range === null) {
+                return true;
+            }
+
             var nowFormatted = moment().format('YYYY-MM-DD');
             var toFormatted = moment(this.info.range.to).format('YYYY-MM-DD');
             var fromDiff = Math.abs(moment(this.info.range.from).diff(moment(nowFormatted), 'days'));
 
-            if (moment(nowFormatted).isAfter(moment(toFormatted)) || fromDiff < days || this.info.range === null) {
+            if (moment(nowFormatted).isAfter(moment(toFormatted)) || fromDiff < days) {
                 refreshNeeded = true;
             }
 
@@ -227,15 +242,20 @@ var router = new VueRouter({
 });
 
 router.map({
-    '/': {
+    '/dashboard': {
         component: Dashboard
     },
-    'dashboard': {
+    '/dashboard/chart/:from/:to': {
+        name: 'chart',
         component: Dashboard
     },
-    'extra': {
+    '/extra': {
         component: Something
     }
+});
+
+router.redirect({
+    '/': '/dashboard'
 });
 
 router.start(App, '#app');

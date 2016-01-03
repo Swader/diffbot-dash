@@ -44,6 +44,13 @@ var Dashboard = Vue.extend({
             this.$parent.chartData(this.$parent._filterCallRange(jQuery.extend(true, {}, this.info.calls)));
         }
     },
+    route: {
+        data: function () {
+            if (this.$route.params.from) {
+                this.$dispatch('request-data', this.info.token, this.$route.params);
+            }
+        }
+    },
     events: {
         'token-saved': function(token) {
             this.initRangePicker();

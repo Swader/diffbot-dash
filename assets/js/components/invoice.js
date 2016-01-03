@@ -1,8 +1,11 @@
+Vue.filter('invoiceslug', function (value) {
+    return moment(value).subtract(1, 'month').format("YYYY-MM-DD") + '+' + moment(value).format("YYYY-MM-DD");
+});
+
 Vue.component('diffbot-invoice', {
     template: `
         <div class="invoice {{ inv.status }}">
-        <h4 class="invoice-title"><a
-                href="#dashboard/{{ inv.date.date | invoiceslug }}"
+        <h4 class="invoice-title"><a v-link="{ name: 'chart', params: {from: from, to: to} }"
                 title="Show on chart">{{ inv.date.date | momentify }}</a></h4>
         <div class="sexy_line"></div>
         <span class="amount">{{ inv.totalAmount | currency }}</span>
@@ -19,7 +22,13 @@ Vue.component('diffbot-invoice', {
             <i class="fa fa-exclamation-circle"></i>
         </div>
     </div>
-
     `,
-    props: ['inv']
+    props: ['inv'],
+    data: function () {
+        return {
+            from: moment(this.inv.date.date).subtract(1, 'month').format("YYYY-MM-DD"),
+            to: moment(this.inv.date.date).format("YYYY-MM-DD")
+        }
+    }
+
 });
