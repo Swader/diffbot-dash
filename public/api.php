@@ -2,9 +2,6 @@
 
 require_once '../vendor/autoload.php';
 
-$dotenv = new Dotenv\Dotenv('../');
-$dotenv->load();
-
 $payload = [];
 
 try {
