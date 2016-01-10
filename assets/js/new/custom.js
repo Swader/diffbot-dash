@@ -34,6 +34,12 @@ var App = Vue.extend({
     events: {
         'token-saved': function(value) {
             store.updateToken(value);
+        },
+        'request-data': function(range) {
+            var days = Math.abs(moment(range.from).diff(moment(), 'days')) + 1;
+            store.config.callsChart.startDate = range.from;
+            store.config.callsChart.endDate = range.to;
+            this._requestData(days);
         }
     },
     ready: function() {
@@ -41,6 +47,11 @@ var App = Vue.extend({
             console.log("Token ready:" + store.state.token);
         } else {
             console.log("Nope");
+        }
+    },
+    methods: {
+        _requestData(days) {
+            console.log(days);
         }
     }
 });
