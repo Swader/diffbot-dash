@@ -71,7 +71,7 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
 
         <section class="sidebar">
 
-            <tokenform :token="info.token"></tokenform>
+            <tokenform :token="sharedState.token"></tokenform>
 
             <!-- Sidebar Menu -->
             <ul class="sidebar-menu">
@@ -107,7 +107,7 @@ desired effect, and don't forget to change the skin to be used in assets/assets.
                 href="https://twitter.com/bitfalls">Bruno Skvorc</a> @ <a
                 href="http://diffbot.com">Diffbot</a>.</strong> All rights reserved.
     </footer>
-    <div class="loading" v-if="options.overlay"></div>
+    <div class="loading" v-if="sharedState.overlay"></div>
 </div><!-- ./wrapper -->
 
 <script src="dist/js/vue.js"></script>

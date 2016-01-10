@@ -16290,41 +16290,25 @@ Vue.filter('momentify', function (value) {
     return moment(value).format("DD.MM.YYYY");
 });
 
-Vue.filter('invoiceslug', function (value) {
-    return moment(value).subtract(1, 'month').format("YYYY-MM-DD") + '+' + moment(value).format("YYYY-MM-DD");
-});
-
-Vue.component('diffbot-invoice', {
+var Something = Vue.extend({
     template: `
-        <div class="invoice {{ inv.status }}">
-        <h4 class="invoice-title"><a v-link="{ name: 'chart', params: {from: from, to: to} }"
-                title="Show on chart">{{ inv.date.date | momentify }}</a></h4>
-        <div class="sexy_line"></div>
-        <span class="amount">{{ inv.totalAmount | currency }}</span>
-        <span class="amount smaller overage"
-              v-if="inv.overageAmount > 0">of which overage: {{ inv.overageAmount | currency }}!</span>
-        <span class="amount smaller">{{ inv.totalCalls }} calls</span>
-        <div class="sexy_line"></div>
-        <span class="plan">{{ inv.plan | capitalize }} plan</span>
-        <div class="price_badge" title="paid" v-if="inv.status == 'paid'">
-            <i class="fa fa-thumbs-up"></i>
-        </div>
-        <div class="price_badge yella" title="unpaid"
-             v-if="inv.status != 'paid'">
-            <i class="fa fa-exclamation-circle"></i>
-        </div>
-    </div>
-    `,
-    props: ['inv'],
-    data: function () {
-        return {
-            from: moment(this.inv.date.date).subtract(1, 'month').format("YYYY-MM-DD"),
-            to: moment(this.inv.date.date).format("YYYY-MM-DD")
-        }
-    }
-
+        <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+        Hello there!
+        </section></div>
+    `
 });
 
+var Dashboard = Vue.extend({
+    template: `
+        <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+        Hello from Dashboard!
+        </section></div>
+    `
+});
 Vue.component('tokenform', {
     template: `
         <form @submit.prevent.stop action="#" method="get"
@@ -16370,337 +16354,57 @@ Vue.component('tokenform', {
         }
     }
 });
-var Dashboard = Vue.extend({
-    template: `
-        <div class="content-wrapper">
-        <!-- Content Header (Page header) -->
-        <section class="content-header">
-
-            <h1>
-                Diffbot Account Dashboard
-                <small>API calls per date, invoice information and status</small>
-            </h1>
-
-        </section>
-
-        <!-- Main content -->
-        <section class="content">
-
-            <template v-if="info.name">
-                <span>Information for {{ info.name }}, on {{ info.plan }} plan</span>
-                <h4>API calls frequency over the given period. Change period with range picker below.</h4>
-            </template>
-            <input v-show="info.name" id="rangepicker" type="text"
-                   placeholder="Data for last 31 days"/>
-            <div id="dashchart"></div>
-
-            <div v-if="info.invoices">
-                <h4>Invoice data (click date to render period on chart)</h4>
-                <div class="invoice-container">
-                    <template v-for="invoice in info.invoices">
-                        <diffbot-invoice :inv="invoice"></diffbot-invoice>
-                    </template>
-                </div>
-            </div>
-
-        </section><!-- /.content -->
-    </div>
-    `,
-    props: ['info', 'options'],
-    ready: function () {
-        this.$nextTick(function () {
-            this.initRangePicker();
-        }.bind(this));
-
-        if (this.info.calls) {
-            this.$parent.chartData(this.$parent._filterCallRange(jQuery.extend(true, {}, this.info.calls)));
-        }
-    },
-    route: {
-        data: function () {
-            if (this.$route.params.from) {
-                this.$dispatch('request-data', this.info.token, this.$route.params);
-            }
-        }
-    },
-    events: {
-        'token-saved': function(token) {
-            this.initRangePicker();
-        }
-    },
-    methods: {
-        initRangePicker: function () {
-            $("#rangepicker").daterangepicker({
-                locale: {
-                    format: this.options.dateFormat
-                },
-                startDate: this.options.callsChart.startDate,
-                endDate: this.options.callsChart.endDate,
-                ranges: {
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 31 Days': [moment().subtract(30, 'days'), moment()],
-                    'Last 6 months': [moment().subtract(6, 'months'), moment()],
-                    'This year': [moment().startOf('year'), moment()],
-                    'Last year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
-                    'This Month': [moment().startOf('month'), moment()],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                },
-                showDropdowns: true,
-                maxDate: moment(),
-                autoApply: true
-            }).on('apply.daterangepicker', function (ev, picker) {
-                this.$dispatch('request-data', this.info.token, this.options.callsChart.days, picker);
-            }.bind(this));
-        }
-    }
-});
-var Something = Vue.extend({
-    template: `
-        <div class="content-wrapper">
-        <!-- Content Header (Page header) -->
-        <section class="content-header">
-        Hello there!
-        </section></div>
-    `
-});
-
-// Default date range to load at first
-var defaultDays = 31;
-// Default data structure to be used - also used to reset to initial state
-var defaultInfo = {
-    name: null,
-    plan: null,
-    token: null,
-    range: null,
-    calls: null,
-    invoices: null
-};
-
 // When set to true, outputs full stack trace with every warning
 Vue.config.debug = true;
+
+var store = {
+        config: {
+            dateFormat: "DD.MM.YYYY.",
+            apiUrl: "/api.php",
+            callsChart: {
+                "days": 31,
+                "startDate": moment().subtract(31, 'days'),
+                "endDate": moment()
+            }
+        },
+        state: {
+            overlay: false,
+            token: localStorage.getItem('token')
+        },
+        showOverlay: function (bool) {
+            this.state.overlay = (bool === true);
+        },
+        updateToken: function(token) {
+            this.state.token = token;
+            localStorage.setItem('token', token);
+        }
+    };
 
 var App = Vue.extend({
     data: function () {
         return {
-            info: defaultInfo,
-            options: {
-                overlay: false,
-                dateFormat: "DD.MM.YYYY.",
-                apiUrl: "/api.php",
-                callsChart: {
-                    "days": defaultDays,
-                    "startDate": moment().subtract(defaultDays, 'days'),
-                    "endDate": moment()
-                }
-            }
-        }
-    },
-    /**
-     * When the main component loads (is ready),
-     * cached data is restored and, if needed, re-fetched
-     */
-    ready: function () {
-        this._loadData();
-        if (this.info.token) {
-            this._requestData(this.info.token, this.options.callsChart.days);
+            sharedState: store.state,
+            privateState: {}
         }
     },
     events: {
-        /**
-         * This event occurs when the token input field is used
-         * Once the data is reset and the ground is cleared for the new token,
-         * new data for 31 days is fetched and all child components are notified
-         * of the token change via $broadcast.
-         * @param token
-         */
-        'token-saved': function (token) {
-            localStorage.clear();
-            this._requestData(token);
-            this.$broadcast('token-saved', token);
-        },
-        /**
-         * In progress - needs work
-         * @param token
-         * @param days
-         * @param picker
-         */
-        'request-data': function (token, days, picker) {
-            if (typeof days === 'object' && days !== null) {
-                // date route
-                this.options.callsChart.startDate = moment(days.from);
-                this.options.callsChart.endDate = moment(days.to);
-                this.options.callsChart.days = Math.abs(this.options.callsChart.startDate.diff(moment(), 'days') - 1);
-            } else {
-                // standard
-                this.options.callsChart.days = Math.abs(picker.startDate.diff(moment(), 'days') - 1);
-                this.options.callsChart.startDate = picker.startDate;
-                this.options.callsChart.endDate = picker.endDate;
-            }
-            this._requestData(token, this.options.callsChart.days);
-        },
-        'hello': function (msg) {
-            console.log(msg);
+        'token-saved': function(value) {
+            store.updateToken(value);
         }
     },
-    methods: {
-        /**
-         * Used to fetch data from cache and put it into the App instance
-         * @private
-         */
-        _loadData: function () {
-            var cached = localStorage.getItem('cached');
-            if (cached !== null) {
-                cached = JSON.parse(cached);
-            }
-            this.info = jQuery.extend(true, this.info, cached);
-        },
-        /**
-         * Note that on the API end, if less than 31 days are given, it defaults
-         * back to 31. This is because shorter timespans don't get returned
-         * faster, and we do all the charting and calculating on the client side
-         * anyway, so there's no point in doing short-range fetches.
-         *
-         * @todo: needs work
-         * @param token
-         * @param days
-         * @private
-         */
-        //
-        _requestData: function (token, days) {
-            if (days === undefined || days === null) {
-                days = 31;
-            }
-            this.showOverlay(true);
-
-            if (this._checkRefreshNeeded(days)) {
-                this.$http.get(this.options.apiUrl, {
-                    "token": token,
-                    "days": days
-                }, function (data, status, request) {
-                    if (data.status == "OK") {
-                        data['data']['token'] = token;
-                        this._saveData(data['data']);
-
-                        var filtered = this._filterCallRange(jQuery.extend(true, {}, data['data']['calls']));
-
-                        this.chartData(filtered);
-                    } else {
-                        localStorage.clear();
-                        this.info = defaultInfo;
-                        swal("Oh noes!", "Looks like something went wrong: " + data.message + " (code: " + data.code + ")", "error");
-                    }
-                    this.showOverlay(false);
-                }.bind(this));
-            } else {
-                // Refresh not needed
-                var filtered = this._filterCallRange(jQuery.extend(true, {}, this.info.calls));
-                this.chartData(filtered);
-                this.showOverlay(false);
-            }
-        },
-        /**
-         * A refresh of data for a given token is needed if it's been more than
-         * a day since the last fetch, if there is no cached data at all, and
-         * if the requested range is bigger than the range in the cache.
-         * @param days
-         * @returns {boolean}
-         * @private
-         */
-        _checkRefreshNeeded: function (days) {
-
-            var refreshNeeded = false;
-
-            if (this.info.range === null) {
-                return true;
-            }
-
-            var nowFormatted = moment().format('YYYY-MM-DD');
-            var toFormatted = moment(this.info.range.to).format('YYYY-MM-DD');
-            var fromDiff = Math.abs(moment(this.info.range.from).diff(moment(nowFormatted), 'days'));
-
-            if (moment(nowFormatted).isAfter(moment(toFormatted)) || fromDiff < days) {
-                refreshNeeded = true;
-            }
-
-            return refreshNeeded;
-        },
-        /**
-         * Saves the fetched data into localStorage
-         * @param data
-         * @private
-         */
-        _saveData: function (data) {
-            localStorage.setItem('cached', JSON.stringify(data));
-            this._loadData();
-        },
-        /**
-         * Removes all the call values that aren't in the requested date range.
-         * This is used for displaying on the chart.
-         * @todo: needs work - where do we put this?
-         * @param calls
-         * @returns {*}
-         * @private
-         */
-        _filterCallRange: function (calls) {
-            var keys = Object.keys(calls);
-            var dlen = keys.length;
-
-            var startCheck = moment(this.options.callsChart.startDate.format()).subtract(1, 'days');
-            var endCheck = this.options.callsChart.endDate;
-
-            for (var i = 0; i < dlen; i++) {
-                if (!moment(keys[i]).isBetween(startCheck, endCheck)) {
-                    delete calls[keys[i]];
-                }
-            }
-            return calls;
-        },
-        /**
-         * Initializes the chart and plots the data passed in
-         * @todo: to be moved into the Dashboard component
-         * @param data
-         */
-        chartData: function (data) {
-
-            var vals = Object.keys(data).map(function (key) {
-                return data[key];
-            });
-
-            c3.generate({
-                bindto: '#dashchart',
-                data: {
-                    x: 'x',
-                    type: "bar",
-                    columns: [
-                        ['x'].concat(Object.keys(data)),
-                        ['Number of calls'].concat(vals)
-                    ],
-                    axes: {
-                        data1: 'y'
-                    }
-                },
-                axis: {
-                    x: {
-                        type: 'timeseries',
-                        tick: {
-                            format: '%d.%m.%Y.'
-                        }
-                    }
-                }
-            });
-        },
-        /**
-         * Switches the loading overlay on/off
-         * @param bool
-         */
-        showOverlay: function (bool) {
-            this.options.overlay = bool;
+    ready: function() {
+        if (store.state.token) {
+            console.log("Token ready:" + store.state.token);
+        } else {
+            console.log("Nope");
         }
-    },
-    http: {
-        root: '/'
     }
 });
+
+
+/*****************************************************************************
+ * Router configuration below
+ *****************************************************************************/
 
 var router = new VueRouter({
     hashbang: false,
