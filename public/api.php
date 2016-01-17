@@ -15,12 +15,14 @@ try {
     $from = array_pop($keys);
 
     $invoices = $info->getInvoices();
-    // Fake overage
-    $invoices = array_merge($invoices, $invoices, $invoices, $invoices);
-    foreach ($invoices as &$invoice) {
-        if (rand(1,20) > 15) {
-            $invoice['overageAmount'] = rand(1,1000);
-            $invoice['status'] = 'foo';
+    if ($invoices) {
+        // Fake overage
+        $invoices = array_merge($invoices, $invoices, $invoices, $invoices);
+        foreach ($invoices as &$invoice) {
+            if (rand(1, 20) > 15) {
+                $invoice['overageAmount'] = rand(1, 1000);
+                $invoice['status'] = 'foo';
+            }
         }
     }
 

@@ -16300,6 +16300,41 @@ var Something = Vue.extend({
     `
 });
 
+Vue.filter('invoiceslug', function (value) {
+    return moment(value).subtract(1, 'month').format("YYYY-MM-DD") + '+' + moment(value).format("YYYY-MM-DD");
+});
+
+Vue.component('diffbot-invoice', {
+    template: `
+        <div class="invoice {{ inv.status }}">
+        <h4 class="invoice-title"><a v-link="{ name: 'chart', params: {from: from, to: to} }"
+                title="Show on chart">{{ inv.date.date | momentify }}</a></h4>
+        <div class="sexy_line"></div>
+        <span class="amount">{{ inv.totalAmount | currency }}</span>
+        <span class="amount smaller overage"
+              v-if="inv.overageAmount > 0">of which overage: {{ inv.overageAmount | currency }}!</span>
+        <span class="amount smaller">{{ inv.totalCalls }} calls</span>
+        <div class="sexy_line"></div>
+        <span class="plan">{{ inv.plan | capitalize }} plan</span>
+        <div class="price_badge" title="paid" v-if="inv.status == 'paid'">
+            <i class="fa fa-thumbs-up"></i>
+        </div>
+        <div class="price_badge yella" title="unpaid"
+             v-if="inv.status != 'paid'">
+            <i class="fa fa-exclamation-circle"></i>
+        </div>
+    </div>
+    `,
+    props: ['inv'],
+    data: function () {
+        return {
+            from: moment(this.inv.date.date).subtract(1, 'month').format("YYYY-MM-DD"),
+            to: moment(this.inv.date.date).format("YYYY-MM-DD")
+        }
+    }
+
+});
+
 var Dashboard = Vue.extend({
     template: `<div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -16315,12 +16350,26 @@ var Dashboard = Vue.extend({
     <!-- Main content -->
     <section class="content">
 
-        <template v-if="info.name">
-            <span>Information for {{ info.name }}, on {{ info.plan }} plan</span>
+    <template v-if="!sharedState.token">
+        Use the input field on the left to enter a token to analyze.
+    </template>
+
+        <template v-if="sharedState.cached">
+            <span>Information for {{ sharedState.cached.name }}, on {{ sharedState.cached.plan }} plan</span>
             <h4>API calls frequency over the given period. Change period with range picker below.</h4>
         </template>
-        <input  id="rangepicker" type="text"
+        <input v-show="sharedState.cached" id="rangepicker" type="text"
                    placeholder="Data for last 31 days"/>
+        <div id="dashchart"></div>
+
+        <div v-if="sharedState.cached">
+            <h4>Invoice data (click date to render period on chart)</h4>
+            <div class="invoice-container">
+                <template v-for="invoice in sharedState.cached.invoices">
+                    <diffbot-invoice :inv="invoice"></diffbot-invoice>
+                </template>
+            </div>
+        </div>
     </section><!-- /.content -->
 </div>
     `,
@@ -16337,9 +16386,27 @@ var Dashboard = Vue.extend({
     },
     route: {
         data: function () {
-            if (this.$route.params.from) {
-                this.$dispatch('request-data', this.$route.params);
+            if (this.sharedState.token) {
+                if (this.$route.params.from) {
+                    this.$dispatch('request-data', this.$route.params);
+                } else {
+                    this.$dispatch('request-data', {
+                        from: moment().subtract(31, 'days').format('YYYY-MM-DD'),
+                        to: moment().format('YYYY-MM-DD')
+                    });
+                }
+            } else {
+                router.go('/dashboard');
             }
+        }
+    },
+    events: {
+        'data-refreshed': function (data) {
+            var filteredCalls = this._filterCallRange(jQuery.extend(true, {}, data['calls']));
+            this.$nextTick(function () {
+                this.chartData(filteredCalls);
+            });
+
         }
     },
     methods: {
@@ -16371,7 +16438,62 @@ var Dashboard = Vue.extend({
                     }
                 });
             }.bind(this));
-        }
+        },
+        /**
+         * Removes all the call values that aren't in the requested date range.
+         * This is used for displaying on the chart.
+         * @param calls
+         * @returns {*}
+         * @private
+         */
+        _filterCallRange: function (calls) {
+            var keys = Object.keys(calls);
+            var dlen = keys.length;
+
+            var startCheck = moment(store.config.callsChart.startDate).subtract(1, 'days');
+            var endCheck = store.config.callsChart.endDate;
+
+            for (var i = 0; i < dlen; i++) {
+                if (!moment(keys[i]).isBetween(startCheck, endCheck)) {
+                    delete calls[keys[i]];
+                }
+            }
+            return calls;
+        },
+        /**
+         * Initializes the chart and plots the data passed in
+         * @param data
+         */
+        chartData: function (data) {
+
+            var vals = Object.keys(data).map(function (key) {
+                return data[key];
+            });
+
+            c3.generate({
+                bindto: '#dashchart',
+                data: {
+                    x: 'x',
+                    type: "bar",
+                    columns: [
+                        ['x'].concat(Object.keys(data)),
+                        ['Number of calls'].concat(vals)
+                    ],
+                    axes: {
+                        data1: 'y'
+                    }
+                },
+                axis: {
+                    x: {
+                        type: 'timeseries',
+                        tick: {
+                            format: '%d.%m.%Y.'
+                        }
+                    }
+                }
+            });
+        },
+
     }
 });
 Vue.component('tokenform', {
@@ -16434,14 +16556,21 @@ var store = {
         },
         state: {
             overlay: false,
-            token: localStorage.getItem('token')
+            token: localStorage.getItem('token'),
+            cached: JSON.parse(localStorage.getItem('cached'))
         },
         showOverlay: function (bool) {
             this.state.overlay = (bool === true);
         },
         updateToken: function(token) {
             this.state.token = token;
+            localStorage.clear();
             localStorage.setItem('token', token);
+            this.cache(null);
+        },
+        cache: function (data) {
+            this.state.cached = data;
+            localStorage.setItem('cached', JSON.stringify(data));
         }
     };
 
@@ -16455,6 +16584,7 @@ var App = Vue.extend({
     events: {
         'token-saved': function(value) {
             store.updateToken(value);
+            this._requestData();
         },
         'request-data': function(range) {
             var days = Math.abs(moment(range.from).diff(moment(), 'days')) + 1;
@@ -16465,16 +16595,48 @@ var App = Vue.extend({
     },
     ready: function() {
         if (store.state.token) {
-            console.log("Token ready:" + store.state.token);
-        } else {
-            console.log("Nope");
+            this._requestData();
         }
     },
     methods: {
         _requestData(days) {
-            console.log(days);
+            if (days === undefined || days === null) {
+                days = 31;
+            }
+            store.showOverlay(true);
+
+            if (this._dataRefreshNeeded(days)) {
+                this.$http.get(store.config.apiUrl, {
+                    "token": this.sharedState.token,
+                    "days": days
+                }, function (data, status, request) {
+                    if (data.status == "OK") {
+                        store.cache(data['data']);
+                        this.$broadcast('data-refreshed', data['data']);
+                    } else {
+                        localStorage.clear();
+                        swal("Oh noes!", "Looks like something went wrong: " + data.message + " (code: " + data.code + ")", "error");
+                    }
+                    store.showOverlay(false);
+                }.bind(this));
+            } else {
+                this.$broadcast('data-refreshed', this.sharedState.cached);
+                store.showOverlay(false);
+            }
+        },
+        _dataRefreshNeeded(days) {
+            if (this.sharedState.cached === null || this.sharedState.cached.range === null) {
+                return true;
+            }
+            var nowFormatted = moment().format('YYYY-MM-DD');
+            var toFormatted = moment(this.sharedState.cached.range.to).format('YYYY-MM-DD');
+            var fromDiff = Math.abs(moment(this.sharedState.cached.range.from).diff(moment(nowFormatted), 'days'));
+
+            return !!(moment(nowFormatted).isAfter(moment(toFormatted)) || fromDiff < (days - 1));
+
         }
     }
+
 });
 
 
